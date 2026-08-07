@@ -18,11 +18,12 @@ function Login() {
       const { token } = response.data;
       if (!token) {
         setAuthError("нет токена");
-        return;
+        return <Navigate to="/login" replace />;
       }
+      
       localStorage.setItem("token", token) // localStorage — это встроенное хранилище браузера, записываем в него ключ токен и значение токен
       navigate("/");
-    } catch {
+    } catch (error) {
       setAuthError("Неверное имя пользователя или пароль");
       console.log(error);
     } finally {
