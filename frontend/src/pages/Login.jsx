@@ -4,6 +4,7 @@ import "./Login.module.css";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 
+
 // отправка данных на сервер 
 
 function Login() {
@@ -13,7 +14,7 @@ function Login() {
   
   const handleSubmit = async (values, {setSubmitting}) => {
     try {
-      const response = await axios.post("/login", values)
+      const response = await axios.post("/api/v1/login", values)
       const { token } = response.data;
       if (!token) {
         setAuthError("нет токена");
@@ -37,41 +38,34 @@ function Login() {
       <h1>Login</h1>
 
       <Formik
-        initialValues={{
-          name: "",
-          password: "",
-        }}
-        onSubmit={(values, actions) => {
-          setTimeout(() => {
-            handleSubmit(values, actions);
-          }, 2000);
-        }}
-      >
-        {({ isSubmitting }) => (
-          <Form>
-            <Field
-              name="name"
-              type="text"
-              placeholder="Name"
-            />
+  initialValues={{
+    username: "",
+    password: "",
+  }}
+  onSubmit={handleSubmit}
+>
+  {({ isSubmitting }) => (
+    <Form>
+      <Field
+        name="username"
+        type="text"
+        placeholder="Username"
+      />
 
-            <Field
-              name="password"
-              type="password"
-              placeholder="Password"
-            />
+      <Field
+        name="password"
+        type="password"
+        placeholder="Password"
+      />
 
-            {authErr && <p>{authErr}</p>}
+      {authErr && <p>{authErr}</p>}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Вход..." : "Войти"}
-            </button>
-          </Form>
-        )}
-      </Formik>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Вход..." : "Войти"}
+      </button>
+    </Form>
+  )}
+</Formik>
     </div>
   );
 }
