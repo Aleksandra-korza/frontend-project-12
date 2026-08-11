@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -7,7 +6,6 @@ import { Routes, Route} from 'react-router-dom'
 
 
 function App() {
-  //const [count, setCount] = useState(0)
 
   return (
     <Routes>

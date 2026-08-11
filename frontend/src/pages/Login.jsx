@@ -3,25 +3,31 @@ import { Formik, Field, Form } from "formik";
 import "./Login.module.css";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { login } from "../slices/authSlice.js";
 
 // отправка данных на сервер 
 
 function Login() {
+   // Вызов на верхнем уровне функции-компонента
+  const navigate = useNavigate();
   const [authErr, setAuthError] = useState(""); // useState("") Создает состояние пустую строку
   // const [значение, функцияИзменения] = useState(начальноеЗначение);
-  const navigate = useNavigate();
+  
   
   const handleSubmit = async (values, {setSubmitting}) => {
     try {
       const response = await axios.post("/api/v1/login", values)
       const { token } = response.data;
+      
       if (!token) {
         setAuthError("нет токена");
-        return <Navigate to="/login" replace />;
+        return;
       }
       
       localStorage.setItem("token", token) // localStorage — это встроенное хранилище браузера, записываем в него ключ токен и значение токен
+
+      console.log(token);
       navigate("/");
     } catch (error) {
       setAuthError("Неверное имя пользователя или пароль");
@@ -40,8 +46,8 @@ function Login() {
 
       <Formik
   initialValues={{
-    username: "",
-    password: "",
+    username: "admin",
+    password: "admin",
   }}
   onSubmit={handleSubmit}
 >

@@ -1,3 +1,21 @@
-.Home {
-    font-family: sans-serif;
-  }
+.home {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.chatLayout {
+  display: flex;
+  min-height: 500px;
+  border: 1px solid #ddd;
+}
+
+.channels {
+  width: 250px;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+}
+
+.messages {
+  flex: 1;
+  padding: 20px;
+}
