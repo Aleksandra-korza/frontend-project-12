@@ -3,6 +3,8 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import './App.css'
 import { Routes, Route} from 'react-router-dom'
+import '@mantine/core/styles.css';
+
 
 
 function App() {

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@mantine/notifications": "^9.5.2",
     "socket.io-client": "^4.8.3"
   }
 }

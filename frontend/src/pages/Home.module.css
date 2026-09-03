@@ -3,10 +3,23 @@
   padding: 20px;
 }
 
+.header {
+  display: flex; /* Ставит Slack Chat и Выйти в одну строку */
+  align-items: center; /* Выравнивает их по вертикали */
+  justify-content: space-between; /* Заголовок слева, кнопку справа */
+}
+
+
 .chatLayout {
-  display: flex;
+  display: flex; 
   min-height: 500px;
   border: 1px solid #ddd;
+}
+
+.channelsHeader {
+  display: flex; /* Ставит Channels и + в одну строку */
+  align-items: center; /* Выравнивает их по вертикали */
+  justify-content: space-between; /* Размещает Channels слева, а + справа */
 }
 
 .channels {
@@ -15,7 +28,43 @@
   border-right: 1px solid #ddd;
 }
 
+.addChannels {
+  display: flex; /* Располагает название канала и кнопку в одну линию */
+  border: none;
+  background: none;
+  color: rgba(32, 82, 232, 0.908);
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 1. Делаем блок сообщений флекс-колонкой */
 .messages {
   flex: 1;
   padding: 20px;
+  display: flex;
+  flex-direction: column; 
+}
+
+.logaut {
+  font-size: 15px;
+}
+
+/* 2. Толкаем форму вниз с помощью margin-top: auto */
+.addMessages {
+  margin-top: auto; 
+  padding: 20px;
+}
+
+.channelRow {
+  display: flex; /* Располагает название канала и кнопку в одну линию */
+  align-items: center; /* Выравнивает элементы по вертикали */
+  justify-content: space-between; /* Раздвигает название и кнопку по краям */
+  width: 100%;
+}
+
+.channelRow p {
+  cursor: pointer;
+  margin: 0;
 }

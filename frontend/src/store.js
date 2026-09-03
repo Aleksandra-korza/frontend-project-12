@@ -3,7 +3,7 @@ import authReducer from './slices/authSlice.js';
 import channelsReducer from "./slices/channelsSlice.js";
 import messagesReducer from "./slices/messagesSlice.js";
 
-export const store = configureStore({
+export const store = configureStore({ // собирает все slices в единое Redux-хранилище.
     reducer: {
         auth: authReducer,
         channels: channelsReducer,
