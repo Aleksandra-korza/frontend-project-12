@@ -1,17 +1,17 @@
-import { configureStore } from "@reduxjs/toolkit";
+
+import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.js';
-import channelsReducer from "./slices/channelsSlice.js";
-import messagesReducer from "./slices/messagesSlice.js";
+import channelsReducer from './slices/channelsSlice.js';
+import messagesReducer from './slices/messagesSlice.js';
 
+export const createStore = () => configureStore({
+  reducer: {
+    auth: authReducer,
+    channels: channelsReducer,
+    messages: messagesReducer,
+  },
+});
 
-export const store = configureStore({ // собирает все slices в единое Redux-хранилище.
-    reducer: {
-        auth: authReducer,
-        channels: channelsReducer,
-        messages: messagesReducer,
-
-    },
-})
 
 /*  Получится такое Redux State:
 state = {
