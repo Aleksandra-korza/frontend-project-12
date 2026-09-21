@@ -343,99 +343,122 @@ function Home() {
     return (
         <div className={styles.home}>
             <header className={styles.header}>
-            <Link to="/">{i18next.t(($) => $.nameChat)}</Link>
-            <Button className={styles.logaut} onClick={() => { dispatch(logout()); navigate("/login")}}>{i18next.t(($) => $.logout)}</Button>
+                <Link to="/">{i18next.t(($) => $.nameChat)}</Link>
+                <Button
+                    className={styles.logaut}
+                    onClick={() => {
+                        dispatch(logout());
+                        navigate("/login");
+                    }}
+                >
+                    {i18next.t(($) => $.logout)}
+                </Button>
             </header>
-            
+
             <div className={styles.chatLayout}>
                 <aside className={styles.channels}>
                     <div className={styles.channelsHeader}>
                         <h2>{i18next.t(($) => $.channels)}</h2>
-                <button
-                    type="button"
-                    className={styles.addChannels}
-                    onClick={() => setIsAddChannelOpen(true)}
-                >
-                    +
-                </button>
-            </div>
+                        <button
+                            type="button"
+                            className={styles.addChannels}
+                            onClick={() => setIsAddChannelOpen(true)}
+                        >
+                            +
+                        </button>
+                    </div>
 
                     {channels.map((channel) => (
-                        <div key={channel.id}
-                             className={styles.channelRow}
-                             >
-                                <p  onClick={() => setCurrentChannelId(channel.id)}>
+                        <div key={channel.id} className={styles.channelRow}>
+                            <p onClick={() => setCurrentChannelId(channel.id)}>
                                 # {channel.name}
-                                </p>
-                             {channel.removable && (
+                            </p>
+                            {channel.removable && (
                                 <Menu>
                                     <Menu.Target>
                                         <Button
-                                        type="button"
-                                        variant="subtle"
-                                        size="compact-sm"
+                                            type="button"
+                                            variant="subtle"
+                                            size="compact-sm"
                                         >
-                                          ⋮  
+                                            ⋮
                                         </Button>
                                     </Menu.Target>
-                                <Menu.Dropdown>
-                                    <Menu.Item
-                                    onClick={() => handlrRenameChanal(channel.id)}
-                                    >
-                                       {i18next.t(($) => $.rename)}
-                                    </Menu.Item>
-                                    <Menu.Item
-                                        color="red"
-                                        onClick={() => handleDeleteChannel(channel.id)
-                                        }
+                                    <Menu.Dropdown>
+                                        <Menu.Item
+                                            onClick={() =>
+                                                handlrRenameChanal(channel.id)
+                                            }
                                         >
-                                         {i18next.t(($) => $.delete)}
+                                            {i18next.t(($) => $.rename)}
                                         </Menu.Item>
-                                </Menu.Dropdown>
+                                        <Menu.Item
+                                            color="red"
+                                            onClick={() =>
+                                                handleDeleteChannel(channel.id)
+                                            }
+                                        >
+                                            {i18next.t(($) => $.delete)}
+                                        </Menu.Item>
+                                    </Menu.Dropdown>
                                 </Menu>
-                             )}
-                       </div>
+                            )}
+                        </div>
                     ))}
                 </aside>
 
-                <main className={styles.messages} >
-                    <h3>{ channels.find((channel) => channel.id === currentChannelId)?.name }</h3>
-                    <h4>{ messages.filter((message) => message.channelId === currentChannelId).length}</h4>
+                <main className={styles.messages}>
+                    {/* Фиксированная шапка чата */}
+                    <div style={{ marginBottom: "16px" }}>
+                        <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "700" }}>
+                            # { channels.find((channel) => channel.id === currentChannelId)?.name }
+                        </h3>
+                        <span style={{ fontSize: "13px", color: "#6c757d" }}>
+                            { messages.filter((message) => message.channelId === currentChannelId).length } сообщений
+                        </span>
+                    </div>
 
-                    {messages.filter((message) => message.channelId === currentChannelId)
-                    .map((message) => (
-                    <p key={message.id}>
-                        {message.username}: {message.body}
-                    </p>
-                    ))}
+                    {/* Прокручиваемая область ТОЛЬКО для сообщений */}
+                    <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                        {messages
+                            .filter((message) => message.channelId === currentChannelId)
+                            .map((message) => (
+                                <p key={message.id}>
+                                    <b>{message.username}:</b> {message.body}
+                                </p>
+                            ))}
+                    </div>
+
+                    {/* Форма всегда снизу */}
+                    <form onSubmit={addedMessages} className={styles.addMessages}>
+                        <input
+                            type="text"
+                            value={messageText}
+                            placeholder="Введите сообщение..."
+                            onChange={(e) => setMessageText(e.target.value)}
+                        />
+                        <button type="submit">{i18next.t(($) => $.add)}</button>
+                    </form>
                 </main>
-
-                <form onSubmit={addedMessages} className={styles.addMessages}>
-                <input
-                    type="text"
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                />
-                    <button type="submit"> {i18next.t(($) => $.add)} </button>
-                </form>
             </div>
+
             <Modal
                 opened={isAddChannelOpen}
-                     onClose={() => {
-                        setIsAddChannelOpen(false);
-                        form.reset();
-                    }}
-                    title={i18next.t(($) => $.addChannelTitle)}
-                    centered
-                     >
-                        <form onSubmit={form.onSubmit(addChannel)}>
-                            <TextInput
-                                label={i18next.t(($) => $.channelName)}
-                                placeholder={i18next.t(($) => $.namePlaceholder)}
-                                withAsterisk // -  withAsterisk ставит звездочку - помечает как обязательное поле 
-                                key={form.key('channelName')} // 
-                                {...form.getInputProps('channelName')} // введенное имя пользователем 
-                            />
+                onClose={() => {
+                    setIsAddChannelOpen(false);
+                    form.reset();
+                }}
+                title={i18next.t(($) => $.addChannelTitle)}
+                centered
+            >
+                <form onSubmit={form.onSubmit(addChannel)}>
+                    <TextInput
+                        label={i18next.t(($) => $.channelName)}
+                        placeholder={i18next.t(($) => $.namePlaceholder)}
+                        withAsterisk
+                        key={form.key("channelName")}
+                        {...form.getInputProps("channelName")}
+                    />
 
                     <div
                         style={{
@@ -445,7 +468,6 @@ function Home() {
                             marginTop: "20px",
                         }}
                     >
-                        
                         <Button
                             type="button"
                             color="gray"
@@ -458,99 +480,96 @@ function Home() {
                         </Button>
 
                         <Button type="submit">
-                        {i18next.t(($) => $.submit)}
+                            {i18next.t(($) => $.submit)}
                         </Button>
-                        </div>
-                        </form>
-                        </Modal>
-                        <Modal
-    opened={isDeleteChannelOpen}
-    onClose={() => {
-        setIsDeleteChannelOpen(false);
-        setChannelToDelete(null);
-    }}
-    title={i18next.t(($) => $.deleteChannelTitle)}
-    centered
->
-    <p>
-    {i18next.t(($) => $.channelDeleteQuestionSecond)}
-    </p>
+                    </div>
+                </form>
+            </Modal>
 
-    <div
-        style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-            marginTop: "20px",
-        }}
-    >
-        <Button
-            type="button"
-            color="gray"
-            onClick={() => {
-                setIsDeleteChannelOpen(false);
-                setChannelToDelete(null);
-            }}
-        >
-            {i18next.t(($) => $.cancel)}
-        </Button>
+            <Modal
+                opened={isDeleteChannelOpen}
+                onClose={() => {
+                    setIsDeleteChannelOpen(false);
+                    setChannelToDelete(null);
+                }}
+                title={i18next.t(($) => $.deleteChannelTitle)}
+                centered
+            >
+                <p>{i18next.t(($) => $.channelDeleteQuestionSecond)}</p>
 
-        <Button
-            color="red"
-            onClick={deleteChannel}
-        >
-            {i18next.t(($) => $.delete)}
-        </Button>
-    </div>
-</Modal>
-<Modal
-    opened={isRenameChannelOpen}
-    onClose={() => {
-        setIsRenameChannelOpen(false);
-        setChannelToRename(null);
-        renameForm.reset();
-    }}
-    title={i18next.t(($) => $.renameChannelTitle)}
-    centered
->
-    <form onSubmit={renameForm.onSubmit(renameChannel)}>
-        <TextInput
-            label={i18next.t(($) => $.channelName)}
-            placeholder={i18next.t(($) => $.namePlaceholder)}
-            withAsterisk
-            autoFocus
-            key={renameForm.key("channelName")}
-            {...renameForm.getInputProps("channelName")}
-        />
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: "10px",
+                        marginTop: "20px",
+                    }}
+                >
+                    <Button
+                        type="button"
+                        color="gray"
+                        onClick={() => {
+                            setIsDeleteChannelOpen(false);
+                            setChannelToDelete(null);
+                        }}
+                    >
+                        {i18next.t(($) => $.cancel)}
+                    </Button>
 
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-                marginTop: "20px",
-            }}
-        >
-            <Button
-                type="button"
-                color="gray"
-                onClick={() => {
+                    <Button color="red" onClick={deleteChannel}>
+                        {i18next.t(($) => $.delete)}
+                    </Button>
+                </div>
+            </Modal>
+
+            <Modal
+                opened={isRenameChannelOpen}
+                onClose={() => {
                     setIsRenameChannelOpen(false);
                     setChannelToRename(null);
                     renameForm.reset();
                 }}
+                title={i18next.t(($) => $.renameChannelTitle)}
+                centered
             >
-                {i18next.t(($) => $.cancel)}
-            </Button>
+                <form onSubmit={renameForm.onSubmit(renameChannel)}>
+                    <TextInput
+                        label={i18next.t(($) => $.channelName)}
+                        placeholder={i18next.t(($) => $.namePlaceholder)}
+                        withAsterisk
+                        autoFocus
+                        key={renameForm.key("channelName")}
+                        {...renameForm.getInputProps("channelName")}
+                    />
 
-            <Button type="submit">
-            {i18next.t(($) => $.rename)}
-            </Button>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: "10px",
+                            marginTop: "20px",
+                        }}
+                    >
+                        <Button
+                            type="button"
+                            color="gray"
+                            onClick={() => {
+                                setIsRenameChannelOpen(false);
+                                setChannelToRename(null);
+                                renameForm.reset();
+                            }}
+                        >
+                            {i18next.t(($) => $.cancel)}
+                        </Button>
+
+                        <Button type="submit">
+                            {i18next.t(($) => $.rename)}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
-    </form>
-</Modal>
-                    </div>);
-                    
-                        }
+    );
+}
 
 export default Home;

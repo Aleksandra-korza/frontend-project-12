@@ -18,9 +18,9 @@ body {
 
 /* Шапка проекта */
 .header {
-  display: flex; /* Ставит Slack Chat и Выйти в одну строку */
-  align-items: center; /* Выравнивает их по вертикали */
-  justify-content: space-between; /* Заголовок слева, кнопку справа */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 24px;
   background-color: #ffffff;
   border-bottom: 1px solid #dee2e6;
@@ -82,9 +82,9 @@ body {
 
 /* Заголовок каналов */
 .channelsHeader {
-  display: flex; /* Ставит Channels и + в одну строку */
-  align-items: center; /* Выравнивает их по вертикали */
-  justify-content: space-between; /* Размещает Channels слева, а + справа */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
   padding: 0 4px;
   font-weight: 700;
@@ -93,7 +93,7 @@ body {
 
 /* Кнопка плюсика / добавления каналов */
 .addChannels {
-  display: flex; /* Располагает название канала и кнопку в одну линию */
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 22px;
@@ -115,9 +115,9 @@ body {
 
 /* Строка канала */
 .channelRow {
-  display: flex; /* Располагает название канала и кнопку в одну линию */
-  align-items: center; /* Выравнивает элементы по вертикали */
-  justify-content: space-between; /* Раздвигает название и кнопку по краям */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   padding: 8px 12px;
   margin-bottom: 4px;
@@ -139,12 +139,14 @@ body {
 /* Правая область чата с сообщениями */
 .messages {
   flex: 1;
-  padding: 20px 24px;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  padding: 20px 24px 80px 24px; /* Дополнительные 80px снизу оставляют свободное место для фиксированной формы */
   box-sizing: border-box;
   background-color: #ffffff;
-  overflow-y: auto;
+  position: relative; /* Форма фиксируется относительно этого блока */
+  overflow-y: auto;   /* Сообщения скроллятся внутри */
 }
 
 /* Внутренние блоки внутри .messages (сообщения) */
@@ -159,17 +161,25 @@ body {
   margin-right: 6px;
 }
 
-/* Форма отправки сообщений */
+/* Форма отправки сообщений — ЖЕСТКО ЗАФИКСИРОВАНА ВНИЗУ */
 .addMessages {
-  margin-top: auto; 
-  padding: 16px 0 0 0;
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+  right: 24px;
   display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
+  box-sizing: border-box;
+  background-color: #ffffff;
 }
 
-.addMessages input, .addMessages textarea {
+.addMessages input, 
+.addMessages textarea {
   flex: 1;
-  padding: 10px 14px;
+  height: 40px;
+  padding: 0 14px;
   border: 1px solid #ced4da;
   border-radius: 8px;
   font-size: 14px;
@@ -183,7 +193,9 @@ body {
 }
 
 .addMessages button {
-  padding: 10px 16px;
+  height: 40px;
+  white-space: nowrap;
+  padding: 0 16px;
   background-color: #0d6efd;
   color: #ffffff;
   border: none;
@@ -191,6 +203,9 @@ body {
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .addMessages button:hover {
