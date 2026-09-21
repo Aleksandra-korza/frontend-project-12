@@ -6,7 +6,7 @@ const initialState = {
 }
 
 const authSlice = createSlice({ // Это способ создать часть Redux state.
-    name: "authorization",
+    name: "Authorization",
     initialState,
     reducers: {
         login(state, action) {

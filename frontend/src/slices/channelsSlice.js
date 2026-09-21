@@ -10,13 +10,12 @@ export const fetchChannels = createAsyncThunk("channels/fetchChannels",
     // Из второго аргумента Redux Toolkit я беру функцию rejectWithValue, чтобы правильно передавать свои ошибки в Redux».
     const token = localStorage.getItem("token");
     if (!token) {
-        // navigate("/login"); 
-        return rejectWithValue("Нет токена");
-    }
+        return rejectWithValue(i18next.t(($) => $.noToken));
+      }
     try {
         const response = await axios.get("/api/v1/channels", {
             headers: {
-                authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             },
           });
 
@@ -27,7 +26,7 @@ export const fetchChannels = createAsyncThunk("channels/fetchChannels",
 
     } catch (error) {
         console.log("Failed to fetch channels:", error);
-        return rejectWithValue("Не удалось получить каналы");
+        return rejectWithValue(error.response?.data || error.message);
     }
 })
 

@@ -6,13 +6,13 @@ export const fetchMessages = createAsyncThunk( "messages/fetchMessages",  // с�
     async ( _, rejectWithValue) => {
     const token = localStorage.getItem("token");
     if (!token) {
-        // navigate("/login");
-        return rejectWithValue("Нет токена");
-    }
+        setAuthError(i18next.t(($) => $.noToken));
+        return;
+      }
     try {
         const response = await axios.get("/api/v1/messages", {
             headers: {
-                authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             }
 
         });
@@ -22,7 +22,7 @@ export const fetchMessages = createAsyncThunk( "messages/fetchMessages",  // с�
 
     } catch (error) {
         console.log("Failed to fetch messages:", error)
-        return rejectWithValue("Не удалось получить сообщения");
+        return rejectWithValue(error.response.data);
     }
 
 })

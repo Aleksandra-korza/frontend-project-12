@@ -1,70 +1,198 @@
-.home {
-  min-height: 100vh;
-  padding: 20px;
+/* CSS файл с ТОЧНЫМ сохранением всех ваших имен классов */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
+/* Контейнер страницы */
+.home {
+  min-height: 100vh;
+  padding: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Шапка проекта */
 .header {
   display: flex; /* Ставит Slack Chat и Выйти в одну строку */
   align-items: center; /* Выравнивает их по вертикали */
   justify-content: space-between; /* Заголовок слева, кнопку справа */
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+.header h1, .header h2, .header div, .header a {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #212529;
+  text-decoration: none;
+}
 
+/* Кнопка "Выйти" */
+.logaut {
+  font-size: 14px;
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+  background: transparent;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.logaut:hover {
+  background-color: #0d6efd;
+  color: #ffffff;
+}
+
+/* Главное окно чата */
 .chatLayout {
-  display: flex; 
-  min-height: 500px;
-  border: 1px solid #ddd;
+  display: flex;
+  flex: 1;
+  max-width: 1110px;
+  width: 100%;
+  margin: 24px auto;
+  min-height: 600px;
+  height: calc(100vh - 120px);
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
+/* Левая панель - Каналы */
+.channels {
+  width: 250px;
+  padding: 20px 16px;
+  border-right: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Заголовок каналов */
 .channelsHeader {
   display: flex; /* Ставит Channels и + в одну строку */
   align-items: center; /* Выравнивает их по вертикали */
   justify-content: space-between; /* Размещает Channels слева, а + справа */
+  margin-bottom: 16px;
+  padding: 0 4px;
+  font-weight: 700;
+  font-size: 16px;
 }
 
-.channels {
-  width: 250px;
-  padding: 20px;
-  border-right: 1px solid #ddd;
-}
-
+/* Кнопка плюсика / добавления каналов */
 .addChannels {
   display: flex; /* Располагает название канала и кнопку в одну линию */
-  border: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(32, 82, 232, 0.908);
+  border-radius: 4px;
   background: none;
   color: rgba(32, 82, 232, 0.908);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   padding: 0;
+  line-height: 1;
 }
 
-/* 1. Делаем блок сообщений флекс-колонкой */
-.messages {
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column; 
+.addChannels:hover {
+  background-color: rgba(32, 82, 232, 0.1);
 }
 
-.logaut {
-  font-size: 15px;
-}
-
-/* 2. Толкаем форму вниз с помощью margin-top: auto */
-.addMessages {
-  margin-top: auto; 
-  padding: 20px;
-}
-
+/* Строка канала */
 .channelRow {
   display: flex; /* Располагает название канала и кнопку в одну линию */
   align-items: center; /* Выравнивает элементы по вертикали */
   justify-content: space-between; /* Раздвигает название и кнопку по краям */
   width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.channelRow:hover {
+  background-color: #e9ecef;
 }
 
 .channelRow p {
   cursor: pointer;
   margin: 0;
+  font-size: 14px;
+  color: #212529;
+}
+
+/* Правая область чата с сообщениями */
+.messages {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+/* Внутренние блоки внутри .messages (сообщения) */
+.messages p, .messages div {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.messages b, .messages strong {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* Форма отправки сообщений */
+.addMessages {
+  margin-top: auto; 
+  padding: 16px 0 0 0;
+  display: flex;
+  gap: 8px;
+}
+
+.addMessages input, .addMessages textarea {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.addMessages input:focus, .addMessages textarea:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.addMessages button {
+  padding: 10px 16px;
+  background-color: #0d6efd;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.addMessages button:hover {
+  background-color: #0b5ed7;
 }

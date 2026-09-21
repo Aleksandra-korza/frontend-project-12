@@ -21,8 +21,9 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-
+.env
+.env.*
+!.env.example
 node_modules
 frontend/node_modules
 frontend/dist

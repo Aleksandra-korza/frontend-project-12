@@ -1,94 +1,78 @@
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #ffffff;
+/* Общие стили */
+body {
+  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
 }
 
+/* Страница регистрации */
+.signup {
+  min-height: 100vh;
+  padding: 0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Шапка сайта */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
+  padding: 12px 24px;
   background-color: #ffffff;
   border-bottom: 1px solid #dee2e6;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.logo {
+.header a {
   color: #212529;
   text-decoration: none;
   font-size: 16px;
   font-weight: 700;
 }
 
-.cardWrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-  padding: 40px 20px;
-}
-
-.card {
+/* Контейнер карточки с формой */
+.form {
   width: 100%;
   max-width: 650px;
+  margin: 60px auto;
+  padding: 40px;
   background: #ffffff;
   border: 1px solid #dee2e6;
   border-radius: 8px;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
 }
 
-.cardBody {
-  display: flex;
-  align-items: center;
-  padding: 40px;
-  gap: 30px;
-}
-
-.illustration {
-  width: 200px;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-.formContainer {
-  flex: 1;
-}
-
-.title {
+.form h1 {
   text-align: center;
   margin-top: 0;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
   font-size: 24px;
   font-weight: 700;
   color: #212529;
 }
 
-.form {
+/* Поля формы и отступы */
+.form form {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.fieldGroup {
-  display: flex;
-  flex-direction: column;
-}
-
-.label {
+/* Подписи к полям */
+.form label {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  display: block;
   color: #212529;
 }
 
-.input {
+/* Поля ввода */
+.form input {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid #ced4da;
@@ -99,26 +83,24 @@
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.inputError {
-  border-color: #dc3545 !important;
+/* Состояние с ошибкой (красная рамка) */
+.form input.is-invalid,
+.form input:invalid {
+  border-color: #dc3545;
 }
 
-.input:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
+/* Сообщения об ошибках */
 .error {
   color: #dc3545;
   font-size: 12px;
   margin-top: 4px;
-  margin-bottom: 0;
 }
 
-.submitBtn {
+/* Кнопка "Зарегистрироваться" */
+.form button[type="submit"] {
   width: 100%;
   padding: 10px 16px;
-  margin-top: 8px;
+  margin-top: 10px;
   background-color: transparent;
   color: #0d6efd;
   border: 1px solid #0d6efd;
@@ -129,26 +111,7 @@
   transition: all 0.15s ease-in-out;
 }
 
-.submitBtn:hover {
+.form button[type="submit"]:hover {
   background-color: #0d6efd;
   color: #ffffff;
-}
-
-.cardFooter {
-  padding: 16px;
-  text-align: center;
-  background-color: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-  font-size: 14px;
-  color: #6c757d;
-}
-
-.cardFooter a {
-  color: #0d6efd;
-  text-decoration: none;
-  margin-left: 4px;
-}
-
-.cardFooter a:hover {
-  text-decoration: underline;
 }

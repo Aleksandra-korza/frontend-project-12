@@ -1,13 +1,21 @@
 import { io } from "socket.io-client";
 import { useState, useEffect } from "react";
 import styles from "./Home.module.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchChannels } from "../slices/channelsSlice.js";
 import { fetchMessages, addMessages } from "../slices/messagesSlice.js";
 import axios from "axios";
 import { Modal, TextInput, Button, Menu } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { logout } from "../slices/authSlice";
+import i18next from "i18next";
+import { notifications } from '@mantine/notifications';
+import filter from 'leo-profanity';
+filter.loadDictionary("ru");
+
+
+
 
 
 function Home() {
@@ -17,7 +25,7 @@ function Home() {
     const channels = useSelector((state) => state.channels.channels)
     const messages = useSelector((state) => state.messages.messages)
     const [messageText, setMessageText] = useState("");
-    const [currentChannelId, setCurrentChannelId] = useState(1);
+    const [currentChannelId, setCurrentChannelId] = useState(null);
     const [isAddChannelOpen, setIsAddChannelOpen] = useState(false); // !!! как работает эта строка - я не пронимаю !!!!
     const [openedMenuId, setOpenedMenuId] = useState(null);
     const [isDeleteChannelOpen, setIsDeleteChannelOpen] = useState(false);
@@ -29,6 +37,7 @@ function Home() {
 
     useEffect(() => {
         const socket = io(); // позволяет отображать изменения в добавленных сообщениях во всех открытых браузерах чата
+        filter.loadDictionary("ru");
         socket.on( "newMessage", (message) => dispatch(addMessages(message))); // socket.o слушает событие с именем "newMessage"
                                 // (message) => {dispatch(addMessages(message));} - выполняется код этот если сервер пришлет новое событие этого типа
                                 // полученное message передай в Redux через addMessages а он уже находится в слайчах, который делает это:
@@ -57,7 +66,7 @@ function Home() {
             
             const response = await axios.post("/api/v1/messages", 
                 {
-                    body: messageText,
+                    body: filter.clean(messageText),
                     channelId: currentChannelId, // сюда сохраняем выборку каналов 
                     username: "admin",
                 },
@@ -79,12 +88,13 @@ function Home() {
         console.log("1. addChannel запустился");
         console.log("2. values:", values);
         const token = localStorage.getItem("token");
+        filter.loadDictionary("ru");
 
         try {
             
             const response = await axios.post("/api/v1/channels", 
                 {
-                    name: values.channelName.trim(),
+                    name: filter.clean(values.channelName.trim()),
                     removable: true,
                 },
                 {
@@ -103,9 +113,22 @@ function Home() {
                 form.reset(); // очищаем инпут
                 setIsAddChannelOpen(false);
 
+                // 3. ПОКАЗЫВАЕМ ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ ОБ УСПЕХЕ 🌟
+                // Показываем уведомление об успехе
+                notifications.show({
+                    title: 'Успешно',
+                    message: i18next.t(($) => $.channelCreated),
+                    color: 'green',
+                  });
+
 
             } catch (error) {
                 console.log("не создался канал", error)
+                // Показываем уведомление об ошибке
+                notifications.show({
+                    message: i18next.t(($) => $.networkError),
+                    color: "red",
+                });
             }
 
 
@@ -128,13 +151,35 @@ function Home() {
     
             dispatch(fetchChannels());
             dispatch(fetchMessages());
+
+            const generalChannel = channels.find(
+                (channel) => channel.name === "general"
+            );
     
-            setCurrentChannelId(1);
+            if (generalChannel) {
+                setCurrentChannelId(generalChannel.id);
+            } else {
+                setCurrentChannelId(1);
+                console.log("generalChannel.id не был найден");
+            }
+
     
             setIsDeleteChannelOpen(false);
             setChannelToDelete(null);
+
+            notifications.show({
+                message: i18next.t(($) => $.channelDeleted),
+                color: "green",
+            });
+
+
         } catch (error) {
             console.log("Не удалось удалить канал", error);
+            nnotifications.show({
+                message: i18next.t(($) => $.networkError),
+                color: "red",
+            });
+
         }
     };
     
@@ -146,7 +191,7 @@ function Home() {
         validate: {
             channelName: (value) => {
                 if (value.length < 3 || value.length > 20) {
-                    return "Name must be 3-20 characters long";
+                    return i18next.t(($) => $.channelAlreadyExists);
                 }
     
                 if (
@@ -156,7 +201,7 @@ function Home() {
                             channel.name.trim().toLowerCase() === value.toLowerCase()
                     )
                 ) {
-                    return "Channel name is already taken";
+                    return i18next.t(($) => $.channelAlreadyExists);
                 }
     
                 return null;
@@ -192,7 +237,7 @@ function Home() {
             validate: {
                 channelName: (value) => {
                     if (value.length < 3 || value.length > 20) {
-                        return "Name must be 3-20 characters long";
+                        return i18next.t(($) => $.channelAlreadyExists);
                     }
             
                     if (
@@ -201,7 +246,7 @@ function Home() {
                                 channel.name.trim().toLowerCase() === value.toLowerCase()
                         )
                     ) {
-                        return "Channel name is already taken";
+                        return i18next.t(($) => $.channelAlreadyExists);
                     }
             
                     return null;
@@ -209,16 +254,17 @@ function Home() {
             },
         }
     );
-
+    
 
     const renameChannel = async (values) => {
         const token = localStorage.getItem("token");
     
         try {
+            const cleanName = filter.clean(values.channelName.trim());
             await axios.patch(
                 `/api/v1/channels/${channelToRename}`,
                 {
-                    name: values.channelName.trim(),
+                    name: cleanName,
                 },
                 {
                     headers: {
@@ -232,9 +278,19 @@ function Home() {
             renameForm.reset();
             setChannelToRename(null);
             setIsRenameChannelOpen(false);
+
+            // ✅ Уведомление об успешном переименовании канала
+            notifications.show({
+                message: i18next.t(($) => $.channelRenamed),
+                color: "green",
+            });
     
         } catch (error) {
             console.log("Не удалось переименовать канал", error);
+            notifications.show({
+                message: i18next.t(($) => $.networkError),
+                color: "red",
+            });
         }
     };
 
@@ -246,17 +302,55 @@ function Home() {
     }, [dispatch]);// Этот эффект зависит от navigate и dispatch.
                              // Если они изменятся — React должен выполнить эффект заново».
 
+    useEffect(() => {
+            if (channels.length > 0 && currentChannelId === null) {
+                                    const generalChannel = channels.find(
+                                        (channel) => channel.name === "general"
+                                    );
+                            
+                                    if (generalChannel) {
+                                        setCurrentChannelId(generalChannel.id);
+                                    }
+                }
+            }, [channels, currentChannelId]);
+
+    // 4. Ошибка при загрузке данных при входе на страницу
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                await dispatch(fetchChannels()).unwrap();
+                await dispatch(fetchMessages()).unwrap();
+            } catch (error) {
+                if (error?.status === 401) {
+                    localStorage.removeItem("token");
+                    navigate("/login");
+                    return;
+                }
+    
+                // ✅ Уведомление об ошибке загрузки данных
+                notifications.show({
+                    message: i18next.t(($) => $.fetchError),
+                    color: "red",
+                });
+            }
+        };
+
+        loadData();
+    }, [dispatch, navigate]);
+
+
 
     return (
         <div className={styles.home}>
-            <div className={styles.header}>
-            <h1>Slack Chat</h1>
-            <Button className={styles.logaut}>Выйти</Button>
-            </div>
+            <header className={styles.header}>
+            <Link to="/">{i18next.t(($) => $.nameChat)}</Link>
+            <Button className={styles.logaut} onClick={() => { dispatch(logout()); navigate("/login")}}>{i18next.t(($) => $.logout)}</Button>
+            </header>
+            
             <div className={styles.chatLayout}>
                 <aside className={styles.channels}>
                     <div className={styles.channelsHeader}>
-                        <h2>Channels</h2>
+                        <h2>{i18next.t(($) => $.channels)}</h2>
                 <button
                     type="button"
                     className={styles.addChannels}
@@ -288,16 +382,14 @@ function Home() {
                                     <Menu.Item
                                     onClick={() => handlrRenameChanal(channel.id)}
                                     >
-                                        Переименовать
+                                       {i18next.t(($) => $.rename)}
                                     </Menu.Item>
                                     <Menu.Item
                                         color="red"
                                         onClick={() => handleDeleteChannel(channel.id)
                                         }
                                         >
-                                         
-                                                Удалить
-                                           
+                                         {i18next.t(($) => $.delete)}
                                         </Menu.Item>
                                 </Menu.Dropdown>
                                 </Menu>
@@ -324,7 +416,7 @@ function Home() {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                 />
-                    <button type="submit"> Add </button>
+                    <button type="submit"> {i18next.t(($) => $.add)} </button>
                 </form>
             </div>
             <Modal
@@ -333,13 +425,13 @@ function Home() {
                         setIsAddChannelOpen(false);
                         form.reset();
                     }}
-                    title="Add channal"
+                    title={i18next.t(($) => $.addChannelTitle)}
                     centered
                      >
                         <form onSubmit={form.onSubmit(addChannel)}>
                             <TextInput
-                                label="Channel name"
-                                placeholder="Name"
+                                label={i18next.t(($) => $.channelName)}
+                                placeholder={i18next.t(($) => $.namePlaceholder)}
                                 withAsterisk // -  withAsterisk ставит звездочку - помечает как обязательное поле 
                                 key={form.key('channelName')} // 
                                 {...form.getInputProps('channelName')} // введенное имя пользователем 
@@ -362,11 +454,11 @@ function Home() {
                                 form.reset();
                             }}
                         >
-                            Cancel
+                            {i18next.t(($) => $.cancel)}
                         </Button>
 
                         <Button type="submit">
-                            Submit
+                        {i18next.t(($) => $.submit)}
                         </Button>
                         </div>
                         </form>
@@ -377,11 +469,11 @@ function Home() {
         setIsDeleteChannelOpen(false);
         setChannelToDelete(null);
     }}
-    title="Удалить канал?"
+    title={i18next.t(($) => $.deleteChannelTitle)}
     centered
 >
     <p>
-        Вы уверены, что хотите удалить этот канал?
+    {i18next.t(($) => $.channelDeleteQuestionSecond)}
     </p>
 
     <div
@@ -400,14 +492,14 @@ function Home() {
                 setChannelToDelete(null);
             }}
         >
-            Отмена
+            {i18next.t(($) => $.cancel)}
         </Button>
 
         <Button
             color="red"
             onClick={deleteChannel}
         >
-            Удалить
+            {i18next.t(($) => $.delete)}
         </Button>
     </div>
 </Modal>
@@ -418,13 +510,13 @@ function Home() {
         setChannelToRename(null);
         renameForm.reset();
     }}
-    title="Переименовать канал"
+    title={i18next.t(($) => $.renameChannelTitle)}
     centered
 >
     <form onSubmit={renameForm.onSubmit(renameChannel)}>
         <TextInput
-            label="Channel name"
-            placeholder="Name"
+            label={i18next.t(($) => $.channelName)}
+            placeholder={i18next.t(($) => $.namePlaceholder)}
             withAsterisk
             autoFocus
             key={renameForm.key("channelName")}
@@ -448,17 +540,15 @@ function Home() {
                     renameForm.reset();
                 }}
             >
-                Отмена
+                {i18next.t(($) => $.cancel)}
             </Button>
 
             <Button type="submit">
-                Переименовать
+            {i18next.t(($) => $.rename)}
             </Button>
         </div>
     </form>
 </Modal>
-
-
                     </div>);
                     
                         }
