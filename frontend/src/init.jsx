@@ -1,9 +1,9 @@
 import { StrictMode } from 'react';
-import * as Sentry from '@sentry/react';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
+import * as Sentry from '@sentry/react';
 
 import { createStore } from './store.js';
 import runApp from './locales/ru/translation.jsx';
@@ -13,19 +13,21 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import './index.css';
 
-// Тесты Хекслета передают сокет аргументом в функцию init()
+// Хекслет передает аргументом socketInstance
 const init = async (socketInstance) => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
+  if (import.meta.env?.VITE_SENTRY_DSN) {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
     });
   }
 
-  await runApp();
+  if (typeof runApp === 'function') {
+    await runApp();
+  }
 
   const store = createStore();
 
-  // ВОЗВРАЩАЕМ VDOM (НЕ вызываем ReactDOM.createRoot здесь)
+  // Обязательно возвращаем VDOM (React-элемент)
   return (
     <StrictMode>
       <BrowserRouter>
