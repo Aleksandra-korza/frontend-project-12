@@ -1,15 +1,33 @@
 import React, { useState } from "react";
-import { Formik, Field, Form } from "formik";
-import styles from "./Login.module.css";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import i18next from "i18next";
+import { 
+  Container, 
+  Card, 
+  TextInput, 
+  PasswordInput, 
+  Button, 
+  Text, 
+  Flex, 
+  Box, 
+  Anchor 
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
 
 function Login() {
   const navigate = useNavigate();
   const [authErr, setAuthError] = useState("");
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const form = useForm({
+    initialValues: {
+      username: "admin",
+      password: "admin",
+    },
+  });
+
+  const handleSubmit = async (values) => {
+    setAuthError("");
     try {
       const response = await axios.post("/api/v1/login", values);
       const { token } = response.data;
@@ -24,98 +42,86 @@ function Login() {
     } catch (error) {
       setAuthError(i18next.t(($) => $.invalidCredentials));
       console.log(error);
-    } finally {
-      setSubmitting(false);
     }
   };
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <Link to="/" className={styles.logo}>{i18next.t(($) => $.nameChat)}</Link>
-      </header>
+    <Flex direction="column" minH="100vh" bg="gray.0">
+      {/* Шапка проекта */}
+      <Box 
+        px="xl" 
+        py="sm" 
+        bg="white" 
+        style={{ borderBottom: "1px solid #dee2e6" }}
+      >
+        <Anchor component={Link} to="/" fw={700} fz="md" c="dark" underline="never">
+          {i18next.t(($) => $.nameChat)}
+        </Anchor>
+      </Box>
 
-      <div className={styles.cardWrapper}>
-        <div className={styles.card}>
-          <div className={styles.cardBody}>
+      {/* Центрированный блок формы */}
+      <Container size="xs" my="auto" w="100%">
+        <Card shadow="sm" padding="xl" radius="md" withBorder>
+          <Flex direction={{ base: "column", sm: "row" }} align="center" gap="lg" mb="lg">
             
-            {/* SVG Иллюстрация напрямую в коде */}
-            <svg 
-              className={styles.illustration} 
-              viewBox="0 0 200 200" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="100" cy="100" r="80" fill="#EBF8FF" />
-              <path d="M60 140 C 60 110, 140 110, 140 140" stroke="#3182CE" strokeWidth="8" strokeLinecap="round" />
-              <circle cx="100" cy="85" r="25" stroke="#3182CE" strokeWidth="8" fill="#FFFFFF" />
-              <path d="M130 55 L 145 35 M 145 35 L 155 45 M 145 35 L 135 25" stroke="#DD6B20" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {/* Иллюстрация */}
+            <Box w={120} h={120} style={{ flexShrink: 0 }}>
+              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="80" fill="#EBF8FF" />
+                <path d="M60 140 C 60 110, 140 110, 140 140" stroke="#3182CE" strokeWidth="8" strokeLinecap="round" />
+                <circle cx="100" cy="85" r="25" stroke="#3182CE" strokeWidth="8" fill="#FFFFFF" />
+                <path d="M130 55 L 145 35 M 145 35 L 155 45 M 145 35 L 135 25" stroke="#DD6B20" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Box>
 
-            <div className={styles.formContainer}>
-              <h1 className={styles.title}>{i18next.t(($) => $.login)}</h1>
+            {/* Форма */}
+            <Box style={{ flex: 1 }} w="100%">
+              <Text size="xl" fw={700} mb="md">
+                {i18next.t(($) => $.login)}
+              </Text>
 
-              <Formik
-                initialValues={{
-                  username: "admin",
-                  password: "admin",
-                }}
-                onSubmit={handleSubmit}
-              >
-                {({ isSubmitting }) => (
-                  <Form className={styles.form}>
-                    <div className={styles.fieldGroup}>
-                      <label htmlFor="username" className={styles.label}>
-                      {i18next.t(($) => $.nikName)}
-                      </label>
-                      <Field
-                        id="username"
-                        name="username"
-                        type="text"
-                        placeholder={i18next.t(($) => $.nikName)}
-                        className={`${styles.input} ${authErr ? styles.inputError : ''}`}
-                      />
-                    </div>
+              <form onSubmit={form.onSubmit(handleSubmit)}>
+                <TextInput
+                  label={i18next.t(($) => $.nikName)}
+                  placeholder={i18next.t(($) => $.nikName)}
+                  mb="sm"
+                  error={authErr && true}
+                  {...form.getInputProps("username")}
+                />
 
-                    <div className={styles.fieldGroup}>
-                      <label htmlFor="password" className={styles.label}>
-                      {i18next.t(($) => $.password)}
-                      </label>
-                      <Field
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Пароль"
-                        className={`${styles.input} ${authErr ? styles.inputError : ''}`}
-                      />
-                    </div>
+                <PasswordInput
+                  label={i18next.t(($) => $.password)}
+                  placeholder="Пароль"
+                  mb="sm"
+                  error={authErr && true}
+                  {...form.getInputProps("password")}
+                />
 
-                    {authErr && <p className={styles.error}>{authErr}</p>}
-
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting} 
-                      className={styles.submitBtn}
-                    >
-                      {isSubmitting 
-                        ? i18next.t(($) => $.loginSubmitting) 
-                        : i18next.t(($) => $.loginSubmit)}
-                    </button>
-                  </Form>
+                {authErr && (
+                  <Text c="red" size="sm" mb="sm">
+                    {authErr}
+                  </Text>
                 )}
-              </Formik>
-            </div>
-          </div>
 
-          <div className={styles.cardFooter}>
-          {i18next.t(($) => $.noAcaunt)}
-            <Link to="/signup">
-            {i18next.t(($) => $.registration)}
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+                <Button type="submit" fullWidth mt="md">
+                  {i18next.t(($) => $.loginSubmit)}
+                </Button>
+              </form>
+            </Box>
+          </Flex>
+
+          {/* Подвал карточки */}
+          <Box pt="md" style={{ borderTop: "1px solid #dee2e6" }} ta="center">
+            <Text size="sm" c="dimmed">
+              {i18next.t(($) => $.noAcaunt)}{" "}
+              <Anchor component={Link} to="/signup">
+                {i18next.t(($) => $.registration)}
+              </Anchor>
+            </Text>
+          </Box>
+        </Card>
+      </Container>
+    </Flex>
   );
 }
 
