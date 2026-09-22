@@ -14,20 +14,16 @@ import '@mantine/notifications/styles.css';
 import './index.css';
 
 const init = async (socket) => {
-  // 1. Инициализация Sentry
   if (import.meta.env?.VITE_SENTRY_DSN) {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
     });
   }
 
-  // 2. Инициализация i18next (переводов)
   await runApp();
 
-  // 3. Инициализация Redux
   const store = createStore();
 
-  // 4. Возврат приложения
   return (
     <StrictMode>
       <BrowserRouter>
