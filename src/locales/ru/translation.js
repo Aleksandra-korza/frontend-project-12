@@ -31,7 +31,7 @@ const runApp = async () => {
             // Уведомления (Notifications)
             channelCreated: 'Канал создан',
             channelRenamed: 'Канал переименован',
-            channelDeleted: 'Канал удален',
+            channelDeleted: 'Канал удалён',
             networkError: 'Ошибка соединения',
             fetchError: 'Ошибка загрузки данных',
 
@@ -48,7 +48,7 @@ const runApp = async () => {
             // Кнопки
             logout: 'Выйти',
             login: 'Войти',
-            add: 'Добавить',
+            add: 'Отправить',
             delete: 'Удалить',
             rename: 'Переименовать',
             cancel: 'Отмена',

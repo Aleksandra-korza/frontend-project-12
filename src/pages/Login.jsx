@@ -1,35 +1,39 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
-import i18next from "i18next";
-import { 
-  Container, 
-  Card, 
-  TextInput, 
-  PasswordInput, 
-  Button, 
-  Text, 
-  Flex, 
-  Box, 
-  Anchor 
-} from "@mantine/core";
-import { useForm } from "@mantine/form";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { login } from '../slices/authSlice.js';
+import i18next from 'i18next';
+import {
+  Container,
+  Card,
+  TextInput,
+  PasswordInput,
+  Button,
+  Text,
+  Flex,
+  Box,
+  Anchor,
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
 
 function Login() {
   const navigate = useNavigate();
-  const [authErr, setAuthError] = useState("");
+  const dispatch = useDispatch();
+  const [authErr, setAuthError] = useState('');
 
   const form = useForm({
     initialValues: {
-      username: "admin",
-      password: "admin",
+      username: '',
+      password: '',
     },
   });
 
   const handleSubmit = async (values) => {
-    setAuthError("");
+    setAuthError('');
+
     try {
-      const response = await axios.post("/api/v1/login", values);
+      const response = await axios.post('/api/v1/login', values);
       const { token } = response.data;
 
       if (!token) {
@@ -37,44 +41,72 @@ function Login() {
         return;
       }
 
-      localStorage.setItem("token", token);
-      navigate("/");
+      dispatch(login(token));
+      navigate('/');
     } catch (error) {
       setAuthError(i18next.t(($) => $.invalidCredentials));
-      console.log(error);
     }
   };
 
   return (
     <Flex direction="column" minH="100vh" bg="gray.0">
-      {/* Шапка проекта */}
-      <Box 
-        px="xl" 
-        py="sm" 
-        bg="white" 
-        style={{ borderBottom: "1px solid #dee2e6" }}
+      <Box
+        px="xl"
+        py="sm"
+        bg="white"
+        style={{ borderBottom: '1px solid #dee2e6' }}
       >
-        <Anchor component={Link} to="/" fw={700} fz="md" c="dark" underline="never">
+        <Anchor
+          component={Link}
+          to="/"
+          fw={700}
+          fz="md"
+          c="dark"
+          underline="never"
+        >
           {i18next.t(($) => $.nameChat)}
         </Anchor>
       </Box>
 
-      {/* Центрированный блок формы */}
       <Container size="xs" my="auto" w="100%">
         <Card shadow="sm" padding="xl" radius="md" withBorder>
-          <Flex direction={{ base: "column", sm: "row" }} align="center" gap="lg" mb="lg">
-            
-            {/* Иллюстрация */}
+          <Flex
+            direction={{ base: 'column', sm: 'row' }}
+            align="center"
+            gap="lg"
+            mb="lg"
+          >
             <Box w={120} h={120} style={{ flexShrink: 0 }}>
-              <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                viewBox="0 0 200 200"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <circle cx="100" cy="100" r="80" fill="#EBF8FF" />
-                <path d="M60 140 C 60 110, 140 110, 140 140" stroke="#3182CE" strokeWidth="8" strokeLinecap="round" />
-                <circle cx="100" cy="85" r="25" stroke="#3182CE" strokeWidth="8" fill="#FFFFFF" />
-                <path d="M130 55 L 145 35 M 145 35 L 155 45 M 145 35 L 135 25" stroke="#DD6B20" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M60 140 C 60 110, 140 110, 140 140"
+                  stroke="#3182CE"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="100"
+                  cy="85"
+                  r="25"
+                  stroke="#3182CE"
+                  strokeWidth="8"
+                  fill="#FFFFFF"
+                />
+                <path
+                  d="M130 55 L 145 35 M 145 35 L 155 45 M 145 35 L 135 25"
+                  stroke="#DD6B20"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </Box>
 
-            {/* Форма */}
             <Box style={{ flex: 1 }} w="100%">
               <Text size="xl" fw={700} mb="md">
                 {i18next.t(($) => $.login)}
@@ -83,18 +115,14 @@ function Login() {
               <form onSubmit={form.onSubmit(handleSubmit)}>
                 <TextInput
                   label={i18next.t(($) => $.nikName)}
-                  placeholder={i18next.t(($) => $.nikName)}
                   mb="sm"
-                  error={authErr && true}
-                  {...form.getInputProps("username")}
+                  {...form.getInputProps('username')}
                 />
 
                 <PasswordInput
                   label={i18next.t(($) => $.password)}
-                  placeholder="Пароль"
                   mb="sm"
-                  error={authErr && true}
-                  {...form.getInputProps("password")}
+                  {...form.getInputProps('password')}
                 />
 
                 {authErr && (
@@ -110,10 +138,13 @@ function Login() {
             </Box>
           </Flex>
 
-          {/* Подвал карточки */}
-          <Box pt="md" style={{ borderTop: "1px solid #dee2e6" }} ta="center">
+          <Box
+            pt="md"
+            style={{ borderTop: '1px solid #dee2e6' }}
+            ta="center"
+          >
             <Text size="sm" c="dimmed">
-              {i18next.t(($) => $.noAcaunt)}{" "}
+              {i18next.t(($) => $.noAcaunt)}{' '}
               <Anchor component={Link} to="/signup">
                 {i18next.t(($) => $.registration)}
               </Anchor>

@@ -1,4 +1,4 @@
-import { io } from "socket.io-client";
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,7 +24,7 @@ import filter from 'leo-profanity';
 
 filter.loadDictionary("ru");
 
-function Home() {
+function Home({ socket }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const channels = useSelector((state) => state.channels.channels);
@@ -38,13 +38,16 @@ function Home() {
     const [channelToRename, setChannelToRename] = useState(null);
 
     useEffect(() => {
-        const socket = io();
-        filter.loadDictionary("ru");
-        socket.on("newMessage", (message) => dispatch(addMessages(message)));
+        filter.loadDictionary('ru');
+    
+        socket?.on('newMessage', (message) => {
+            dispatch(addMessages(message));
+        });
+    
         return () => {
-            socket.disconnect();
+            socket?.off('newMessage');
         };
-    }, [dispatch]);
+    }, [dispatch, socket]);
 
     const addedMessages = async (e) => {
         e.preventDefault();
@@ -61,7 +64,7 @@ function Home() {
                 {
                     body: filter.clean(messageText),
                     channelId: currentChannelId,
-                    username: "admin",
+                    username: "",
                 },
                 {
                     headers: {
@@ -164,7 +167,7 @@ function Home() {
         validate: {
             channelName: (value) => {
                 if (value.length < 3 || value.length > 20) {
-                    return i18next.t(($) => $.channelAlreadyExists);
+                    return i18next.t(($) => $.channelNameRange);
                 }
 
                 if (
@@ -203,7 +206,7 @@ function Home() {
         validate: {
             channelName: (value) => {
                 if (value.length < 3 || value.length > 20) {
-                    return i18next.t(($) => $.channelAlreadyExists);
+                    return i18next.t(($) => $.channelNameRange);
                 }
 
                 if (
@@ -212,7 +215,7 @@ function Home() {
                             channel.name.trim().toLowerCase() === value.toLowerCase()
                     )
                 ) {
-                    return i18next.t(($) => $.channelAlreadyExists);
+                    return i18next.t(($) => $.channelNameRange);
                 }
 
                 return null;

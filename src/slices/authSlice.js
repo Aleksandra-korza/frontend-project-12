@@ -1,27 +1,24 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    isAutenticaded: false,
-    token: null,
-}
+  token: null,
+  isAuthenticated: false,
+};
 
-const authSlice = createSlice({ // Это способ создать часть Redux state.
-    name: "Authorization",
-    initialState,
-    reducers: {
-        login(state, action) {
-            state.token = action.payload;
-            state.isAutenticaded = true;
-        },
-        logout(state, action) {
-            state.token = null;
-            state.isAutenticaded =false;
-        }
-    }
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    login: (state, action) => {
+      state.token = action.payload;
+      state.isAuthenticated = true;
+    },
+    logout: (state) => {
+      state.token = null;
+      state.isAuthenticated = false;
+    },
+  },
+});
 
-})
-
-// Slice объединяет: state + reducers + actions для одной области приложения.
-
-export const {login, logout} = authSlice.actions;
+export const { login, logout } = authSlice.actions;
 export default authSlice.reducer;
