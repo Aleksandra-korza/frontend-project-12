@@ -41,6 +41,7 @@ function Login() {
         return;
       }
 
+      localStorage.setItem('token', token);
       dispatch(login(token));
       navigate('/');
     } catch (error) {
