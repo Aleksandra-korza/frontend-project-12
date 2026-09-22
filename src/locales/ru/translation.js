@@ -32,6 +32,7 @@ const runApp = async () => {
             channelCreated: 'Канал создан',
             channelRenamed: 'Канал переименован',
             channelDeleted: 'Канал удалён',
+            channelManagement: 'Управление каналом',
             networkError: 'Ошибка соединения',
             fetchError: 'Ошибка загрузки данных',
 

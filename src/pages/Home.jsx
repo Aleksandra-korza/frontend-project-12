@@ -4,9 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
     fetchChannels,
-    addChannel,
-    renameChannel,
-    removeChannel,
+    addChannel as addChannelToStore,
+    renameChannel as renameChannelInStore,
+    removeChannel as removeChannelFromStore,
 } from "../slices/channelsSlice.js";
 import { fetchMessages, addMessages } from "../slices/messagesSlice.js";
 import axios from "axios";
@@ -50,15 +50,15 @@ function Home({ socket }) {
         });
     
         socket?.on("newChannel", (channel) => {
-            dispatch(addChannel(channel));
+            dispatch(addChannelToStore(channel));
         });
     
         socket?.on("renameChannel", (channel) => {
-            dispatch(renameChannel(channel));
+            dispatch(renameChannelInStore(channel));
         });
     
         socket?.on("removeChannel", (channel) => {
-            dispatch(removeChannel(channel));
+            dispatch(removeChannelFromStore(channel));
         });
     
         return () => {
@@ -391,7 +391,12 @@ function Home({ socket }) {
                             {channel.removable && (
                                 <Menu placement="end">
                                     <Menu.Target>
-                                        <Button variant="subtle" size="compact-xs" color="gray">
+                                        <Button
+                                            variant="subtle"
+                                            size="compact-xs"
+                                            color="gray"
+                                            aria-label={i18next.t(($) => $.channelManagement)}
+                                        >
                                             ⋮
                                         </Button>
                                     </Menu.Target>
