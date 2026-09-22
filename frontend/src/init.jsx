@@ -13,28 +13,24 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import './index.css';
 
-// Хекслет передает аргументом socketInstance
-const init = async (socketInstance) => {
+const init = async (socket) => {
   if (import.meta.env?.VITE_SENTRY_DSN) {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
     });
   }
 
-  if (typeof runApp === 'function') {
-    await runApp();
-  }
+  await runApp();
 
   const store = createStore();
 
-  // Обязательно возвращаем VDOM (React-элемент)
   return (
     <StrictMode>
       <BrowserRouter>
         <Provider store={store}>
           <MantineProvider>
             <Notifications position="bottom-right" zIndex={1000} />
-            <App socket={socketInstance} />
+            <App socket={socket} />
           </MantineProvider>
         </Provider>
       </BrowserRouter>
