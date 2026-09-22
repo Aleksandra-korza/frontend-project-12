@@ -2,7 +2,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchChannels } from "../slices/channelsSlice.js";
+import {
+    fetchChannels,
+    addChannel,
+    renameChannel,
+    removeChannel,
+} from "../slices/channelsSlice.js";
 import { fetchMessages, addMessages } from "../slices/messagesSlice.js";
 import axios from "axios";
 import { 
@@ -38,14 +43,29 @@ function Home({ socket }) {
     const [channelToRename, setChannelToRename] = useState(null);
 
     useEffect(() => {
-        filter.loadDictionary('ru');
+        filter.loadDictionary("ru");
     
-        socket?.on('newMessage', (message) => {
+        socket?.on("newMessage", (message) => {
             dispatch(addMessages(message));
         });
     
+        socket?.on("newChannel", (channel) => {
+            dispatch(addChannel(channel));
+        });
+    
+        socket?.on("renameChannel", (channel) => {
+            dispatch(renameChannel(channel));
+        });
+    
+        socket?.on("removeChannel", (channel) => {
+            dispatch(removeChannel(channel));
+        });
+    
         return () => {
-            socket?.off('newMessage');
+            socket?.off("newMessage");
+            socket?.off("newChannel");
+            socket?.off("renameChannel");
+            socket?.off("removeChannel");
         };
     }, [dispatch, socket]);
 
@@ -64,7 +84,6 @@ function Home({ socket }) {
                 {
                     body: filter.clean(messageText),
                     channelId: currentChannelId,
-                    username: "",
                 },
                 {
                     headers: {
@@ -173,8 +192,7 @@ function Home({ socket }) {
                 if (
                     channels.some(
                         (channel) =>
-                            channel.id !== channelToRename &&
-                            channel.name.trim().toLowerCase() === value.toLowerCase()
+                            channel.name.trim().toLowerCase() === value.trim().toLowerCase()
                     )
                 ) {
                     return i18next.t(($) => $.channelAlreadyExists);
@@ -208,16 +226,17 @@ function Home({ socket }) {
                 if (value.length < 3 || value.length > 20) {
                     return i18next.t(($) => $.channelNameRange);
                 }
-
+    
                 if (
                     channels.some(
                         (channel) =>
-                            channel.name.trim().toLowerCase() === value.toLowerCase()
+                            channel.name.trim().toLowerCase() ===
+                            value.trim().toLowerCase()
                     )
                 ) {
-                    return i18next.t(($) => $.channelNameRange);
+                    return i18next.t(($) => $.channelAlreadyExists);
                 }
-
+    
                 return null;
             },
         },
@@ -258,10 +277,6 @@ function Home({ socket }) {
         }
     };
 
-    useEffect(() => {
-        dispatch(fetchChannels());
-        dispatch(fetchMessages());
-    }, [dispatch]);
 
     useEffect(() => {
         if (channels.length > 0 && currentChannelId === null) {
@@ -314,6 +329,7 @@ function Home({ socket }) {
                 <Button
                     variant="outline"
                     onClick={() => {
+                        localStorage.removeItem("token");
                         dispatch(logout());
                         navigate("/login");
                     }}
@@ -362,9 +378,16 @@ function Home({ socket }) {
                                 cursor: "pointer"
                             }}
                         >
-                            <Text size="sm" style={{ flex: 1 }} onClick={() => setCurrentChannelId(channel.id)}>
+                            <Button
+                                variant="subtle"
+                                color="dark"
+                                size="compact-sm"
+                                justify="flex-start"
+                                style={{ flex: 1 }}
+                                onClick={() => setCurrentChannelId(channel.id)}
+                            >
                                 # {channel.name}
-                            </Text>
+                            </Button>
                             {channel.removable && (
                                 <Menu placement="end">
                                     <Menu.Target>
@@ -414,12 +437,13 @@ function Home({ socket }) {
                     <Box p="md" style={{ borderTop: "1px solid #dee2e6" }}>
                         <form onSubmit={addedMessages}>
                             <Flex gap="sm">
-                                <TextInput
-                                    style={{ flex: 1 }}
-                                    value={messageText}
-                                    placeholder="Введите сообщение..."
-                                    onChange={(e) => setMessageText(e.target.value)}
-                                />
+                            <TextInput
+                                aria-label="Новое сообщение"
+                                style={{ flex: 1 }}
+                                value={messageText}
+                                placeholder="Введите сообщение..."
+                                onChange={(e) => setMessageText(e.target.value)}
+                            />
                                 <Button type="submit">{i18next.t(($) => $.add)}</Button>
                             </Flex>
                         </form>

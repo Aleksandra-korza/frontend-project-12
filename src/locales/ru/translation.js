@@ -55,7 +55,7 @@ const runApp = async () => {
             submit: 'Подтвердить',
 
             // Формы и поля
-            channelName: 'Название канала',
+            channelName: 'Имя канала',
             password: 'Пароль',
             confirmPassword: 'Подтвердите пароль',
             username: 'Имя пользователя',
@@ -66,7 +66,7 @@ const runApp = async () => {
             usernameRange: 'От 3 до 20 символов',
             passwordMin: 'Не менее 6 символов',
             mustMatch: 'Пароли должны совпадать',
-            userAlreadyExists: 'Пользователь с таким именем уже существует',
+            userAlreadyExists: 'Такой пользователь уже существует',
             signupFailed: 'Не удалось зарегистрироваться',
           },
         },
