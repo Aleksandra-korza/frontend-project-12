@@ -1,5 +1,5 @@
-// ВАЖНО: импортируем без расширения .js / .jsx
-import init from './init'; 
+import ReactDOM from 'react-dom/client';
+import init from './init.jsx';
 
 const app = async () => {
   const root = ReactDOM.createRoot(document.getElementById('root'));

@@ -13,7 +13,7 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import './index.css';
 
-const init = async (socket) => {
+const init = async (socket = null) => {
   if (import.meta.env?.VITE_SENTRY_DSN) {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
