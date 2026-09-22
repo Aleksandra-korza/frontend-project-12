@@ -5,8 +5,8 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import * as Sentry from '@sentry/react';
 
+import runApp from './locales/ru/translation.js';
 import { createStore } from './store.js';
-import runApp from './locales/ru/translation.jsx';
 import App from './App.jsx';
 
 import '@mantine/core/styles.css';
@@ -14,16 +14,20 @@ import '@mantine/notifications/styles.css';
 import './index.css';
 
 const init = async (socket) => {
+  // 1. Инициализация Sentry
   if (import.meta.env?.VITE_SENTRY_DSN) {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN,
     });
   }
 
+  // 2. Инициализация i18next (переводов)
   await runApp();
 
+  // 3. Инициализация Redux
   const store = createStore();
 
+  // 4. Возврат приложения
   return (
     <StrictMode>
       <BrowserRouter>
