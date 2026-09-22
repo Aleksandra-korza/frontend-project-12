@@ -27,7 +27,9 @@ import i18next from "i18next";
 import { notifications } from '@mantine/notifications';
 import filter from 'leo-profanity';
 
-filter.loadDictionary("ru");
+filter.clearList();
+filter.add(filter.getDictionary("en"));
+filter.add(filter.getDictionary("ru"));
 
 function Home({ socket }) {
     const navigate = useNavigate();
@@ -43,7 +45,9 @@ function Home({ socket }) {
     const [channelToRename, setChannelToRename] = useState(null);
 
     useEffect(() => {
-        filter.loadDictionary("ru");
+         filter.clearList();
+filter.add(filter.getDictionary("en"));
+filter.add(filter.getDictionary("ru"));
     
         socket?.on("newMessage", (message) => {
             dispatch(addMessages(message));
@@ -100,7 +104,9 @@ function Home({ socket }) {
 
     const addChannel = async (values) => {
         const token = localStorage.getItem("token");
-        filter.loadDictionary("ru");
+         filter.clearList();
+filter.add(filter.getDictionary("en"));
+filter.add(filter.getDictionary("ru"));
 
         try {
             const response = await axios.post(
@@ -419,7 +425,7 @@ function Home({ socket }) {
                     {/* Шапка текущего канала */}
                     <Box p="md" style={{ borderBottom: "1px solid #dee2e6" }}>
                         <Text fw={700} size="md">
-                            # {channels.find((channel) => channel.id === currentChannelId)?.name}
+                            {channels.find((channel) => channel.id === currentChannelId)?.name}
                         </Text>
                         <Text size="xs" c="dimmed">
                             {messages.filter((message) => message.channelId === currentChannelId).length} сообщений
