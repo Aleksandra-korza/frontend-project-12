@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,22 +9,24 @@ import {
 } from "../slices/channelsSlice.js";
 import { fetchMessages, addMessages } from "../slices/messagesSlice.js";
 import axios from "axios";
-import { 
-  Modal, 
-  TextInput, 
-  Button, 
-  Menu, 
-  Flex, 
-  Box, 
-  ScrollArea, 
-  Text, 
-  ActionIcon 
+import {
+  Modal,
+  TextInput,
+  Button,
+  Flex,
+  Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { yupResolver } from "mantine-form-yup-resolver";
+import * as yup from "yup";
 import { logout } from "../slices/authSlice";
 import i18next from "i18next";
-import { notifications } from '@mantine/notifications';
-import filter from 'leo-profanity';
+import { notifications } from "@mantine/notifications";
+import filter from "leo-profanity";
+
+import ChannelList from "../components/ChannelList.jsx";
+import ChatMessages from "../components/ChatMessages.jsx";
+import MessageForm from "../components/MessageForm.jsx";
 
 filter.clearList();
 filter.add(filter.getDictionary("en"));
@@ -44,27 +45,45 @@ function Home({ socket }) {
     const [isRenameChannelOpen, setIsRenameChannelOpen] = useState(false);
     const [channelToRename, setChannelToRename] = useState(null);
 
+    const channelSchema = yup.object().shape({
+        channelName: yup
+          .string()
+          .required(i18next.t(($) => $.required))
+          .min(3, i18next.t(($) => $.channelNameRange))
+          .max(20, i18next.t(($) => $.channelNameRange))
+          .test(
+            "unique-channel",
+            i18next.t(($) => $.channelAlreadyExists),
+            (value) =>
+              !channels.some(
+                (channel) =>
+                  channel.name.trim().toLowerCase() ===
+                  value.trim().toLowerCase()
+              )
+          ),
+      });
+
     useEffect(() => {
-         filter.clearList();
-filter.add(filter.getDictionary("en"));
-filter.add(filter.getDictionary("ru"));
-    
+        filter.clearList();
+        filter.add(filter.getDictionary("en"));
+        filter.add(filter.getDictionary("ru"));
+
         socket?.on("newMessage", (message) => {
             dispatch(addMessages(message));
         });
-    
+
         socket?.on("newChannel", (channel) => {
             dispatch(addChannelToStore(channel));
         });
-    
+
         socket?.on("renameChannel", (channel) => {
             dispatch(renameChannelInStore(channel));
         });
-    
+
         socket?.on("removeChannel", (channel) => {
             dispatch(removeChannelFromStore(channel));
         });
-    
+
         return () => {
             socket?.off("newMessage");
             socket?.off("newChannel");
@@ -104,9 +123,10 @@ filter.add(filter.getDictionary("ru"));
 
     const addChannel = async (values) => {
         const token = localStorage.getItem("token");
-         filter.clearList();
-filter.add(filter.getDictionary("en"));
-filter.add(filter.getDictionary("ru"));
+
+        filter.clearList();
+        filter.add(filter.getDictionary("en"));
+        filter.add(filter.getDictionary("ru"));
 
         try {
             const response = await axios.post(
@@ -128,9 +148,9 @@ filter.add(filter.getDictionary("ru"));
             setIsAddChannelOpen(false);
 
             notifications.show({
-                title: 'Успешно',
+                title: "Успешно",
                 message: i18next.t(($) => $.channelCreated),
-                color: 'green',
+                color: "green",
             });
         } catch (error) {
             console.log("не создался канал", error);
@@ -150,11 +170,14 @@ filter.add(filter.getDictionary("ru"));
         const token = localStorage.getItem("token");
 
         try {
-            await axios.delete(`/api/v1/channels/${channelToDelete}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await axios.delete(
+                `/api/v1/channels/${channelToDelete}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
             dispatch(fetchChannels());
             dispatch(fetchMessages());
@@ -186,31 +209,14 @@ filter.add(filter.getDictionary("ru"));
     };
 
     const renameForm = useForm({
-        initialValues: {
-            channelName: "",
-        },
-        validate: {
-            channelName: (value) => {
-                if (value.length < 3 || value.length > 20) {
-                    return i18next.t(($) => $.channelNameRange);
-                }
-
-                if (
-                    channels.some(
-                        (channel) =>
-                            channel.name.trim().toLowerCase() === value.trim().toLowerCase()
-                    )
-                ) {
-                    return i18next.t(($) => $.channelAlreadyExists);
-                }
-
-                return null;
-            },
-        },
+        initialValues: { channelName: "" },
+        validate: yupResolver(channelSchema),
     });
 
     const handlrRenameChanal = (channelId) => {
-        const channel = channels.find((channel) => channel.id === channelId);
+        const channel = channels.find(
+            (channel) => channel.id === channelId
+        );
 
         if (!channel) {
             return;
@@ -224,35 +230,18 @@ filter.add(filter.getDictionary("ru"));
     };
 
     const form = useForm({
-        initialValues: {
-            channelName: "",
-        },
-        validate: {
-            channelName: (value) => {
-                if (value.length < 3 || value.length > 20) {
-                    return i18next.t(($) => $.channelNameRange);
-                }
-    
-                if (
-                    channels.some(
-                        (channel) =>
-                            channel.name.trim().toLowerCase() ===
-                            value.trim().toLowerCase()
-                    )
-                ) {
-                    return i18next.t(($) => $.channelAlreadyExists);
-                }
-    
-                return null;
-            },
-        },
+        initialValues: { channelName: "" },
+        validate: yupResolver(channelSchema),
     });
 
     const renameChannel = async (values) => {
         const token = localStorage.getItem("token");
 
         try {
-            const cleanName = filter.clean(values.channelName.trim());
+            const cleanName = filter.clean(
+                values.channelName.trim()
+            );
+
             await axios.patch(
                 `/api/v1/channels/${channelToRename}`,
                 {
@@ -282,7 +271,6 @@ filter.add(filter.getDictionary("ru"));
             });
         }
     };
-
 
     useEffect(() => {
         if (channels.length > 0 && currentChannelId === null) {
@@ -321,17 +309,28 @@ filter.add(filter.getDictionary("ru"));
     return (
         <Flex direction="column" h="100vh" bg="gray.0">
             {/* Шапка проекта */}
-            <Flex 
-                justify="space-between" 
-                align="center" 
-                px="xl" 
-                py="sm" 
-                bg="white" 
-                style={{ borderBottom: "1px solid #dee2e6" }}
+            <Flex
+                justify="space-between"
+                align="center"
+                px="xl"
+                py="sm"
+                bg="white"
+                style={{
+                    borderBottom: "1px solid #dee2e6",
+                }}
             >
-                <Link to="/" style={{ textDecoration: "none", color: "#212529", fontWeight: 700, fontSize: 16 }}>
+                <Link
+                    to="/"
+                    style={{
+                        textDecoration: "none",
+                        color: "#212529",
+                        fontWeight: 700,
+                        fontSize: 16,
+                    }}
+                >
                     {i18next.t(($) => $.nameChat)}
                 </Link>
+
                 <Button
                     variant="outline"
                     onClick={() => {
@@ -345,120 +344,44 @@ filter.add(filter.getDictionary("ru"));
             </Flex>
 
             {/* Главное окно чата */}
-            <Flex 
-                style={{ 
-                    flex: 1, 
-                    maxWidth: 1110, 
-                    width: "100%", 
-                    margin: "24px auto", 
-                    border: "1px solid #dee2e6", 
-                    borderRadius: 8, 
-                    overflow: "hidden" 
-                }} 
+            <Flex
+                style={{
+                    flex: 1,
+                    maxWidth: 1110,
+                    width: "100%",
+                    margin: "24px auto",
+                    border: "1px solid #dee2e6",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                }}
                 bg="white"
             >
-                {/* Левая панель - Каналы */}
-                <Box w={250} p="md" bg="gray.0" style={{ borderRight: "1px solid #dee2e6" }}>
-                    <Flex justify="space-between" align="center" mb="md">
-                        <Text fw={700} size="md">{i18next.t(($) => $.channels)}</Text>
-                        <ActionIcon
-                            variant="outline"
-                            color="blue"
-                            size="sm"
-                            onClick={() => setIsAddChannelOpen(true)}
-                        >
-                            +
-                        </ActionIcon>
-                    </Flex>
-
-                    {channels.map((channel) => (
-                        <Flex 
-                            key={channel.id} 
-                            justify="space-between" 
-                            align="center" 
-                            p="xs" 
-                            mb={4}
-                            style={{ 
-                                borderRadius: 6, 
-                                backgroundColor: channel.id === currentChannelId ? "#e9ecef" : "transparent",
-                                cursor: "pointer"
-                            }}
-                        >
-                            <Button
-                                variant="subtle"
-                                color="dark"
-                                size="compact-sm"
-                                justify="flex-start"
-                                style={{ flex: 1 }}
-                                onClick={() => setCurrentChannelId(channel.id)}
-                            >
-                                # {channel.name}
-                            </Button>
-                            {channel.removable && (
-                                <Menu placement="end">
-                                    <Menu.Target>
-                                        <Button
-                                            variant="subtle"
-                                            size="compact-xs"
-                                            color="gray"
-                                            aria-label={i18next.t(($) => $.channelManagement)}
-                                        >
-                                            ⋮
-                                        </Button>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        <Menu.Item onClick={() => handlrRenameChanal(channel.id)}>
-                                            {i18next.t(($) => $.rename)}
-                                        </Menu.Item>
-                                        <Menu.Item color="red" onClick={() => handleDeleteChannel(channel.id)}>
-                                            {i18next.t(($) => $.delete)}
-                                        </Menu.Item>
-                                    </Menu.Dropdown>
-                                </Menu>
-                            )}
-                        </Flex>
-                    ))}
-                </Box>
+                <ChannelList
+                    channels={channels}
+                    currentChannelId={currentChannelId}
+                    setCurrentChannelId={setCurrentChannelId}
+                    setIsAddChannelOpen={setIsAddChannelOpen}
+                    handlrRenameChanal={handlrRenameChanal}
+                    handleDeleteChannel={handleDeleteChannel}
+                />
 
                 {/* Правая часть - Чат */}
-                <Flex direction="column" style={{ flex: 1 }} h="100%">
-                    {/* Шапка текущего канала */}
-                    <Box p="md" style={{ borderBottom: "1px solid #dee2e6" }}>
-                        <Text fw={700} size="md">
-                            {channels.find((channel) => channel.id === currentChannelId)?.name}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                            {messages.filter((message) => message.channelId === currentChannelId).length} сообщений
-                        </Text>
-                    </Box>
+                <Flex
+                    direction="column"
+                    style={{ flex: 1 }}
+                    h="100%"
+                >
+                    <ChatMessages
+                        channels={channels}
+                        messages={messages}
+                        currentChannelId={currentChannelId}
+                    />
 
-                    {/* Сообщения с прокруткой Mantine */}
-                    <ScrollArea style={{ flex: 1 }} p="md">
-                        {messages
-                            .filter((message) => message.channelId === currentChannelId)
-                            .map((message) => (
-                                <Text key={message.id} size="sm" mb="xs">
-                                    <Text span fw={700} mr={6}>{message.username}:</Text>
-                                    {message.body}
-                                </Text>
-                            ))}
-                    </ScrollArea>
-
-                    {/* Форма ввода всегда внизу */}
-                    <Box p="md" style={{ borderTop: "1px solid #dee2e6" }}>
-                        <form onSubmit={addedMessages}>
-                            <Flex gap="sm">
-                            <TextInput
-                                aria-label="Новое сообщение"
-                                style={{ flex: 1 }}
-                                value={messageText}
-                                placeholder="Введите сообщение..."
-                                onChange={(e) => setMessageText(e.target.value)}
-                            />
-                                <Button type="submit">{i18next.t(($) => $.add)}</Button>
-                            </Flex>
-                        </form>
-                    </Box>
+                    <MessageForm
+                        messageText={messageText}
+                        setMessageText={setMessageText}
+                        addedMessages={addedMessages}
+                    />
                 </Flex>
             </Flex>
 
@@ -491,7 +414,10 @@ filter.add(filter.getDictionary("ru"));
                         >
                             {i18next.t(($) => $.cancel)}
                         </Button>
-                        <Button type="submit">{i18next.t(($) => $.submit)}</Button>
+
+                        <Button type="submit">
+                            {i18next.t(($) => $.submit)}
+                        </Button>
                     </Flex>
                 </form>
             </Modal>
@@ -505,7 +431,12 @@ filter.add(filter.getDictionary("ru"));
                 title={i18next.t(($) => $.deleteChannelTitle)}
                 centered
             >
-                <Text size="sm">{i18next.t(($) => $.channelDeleteQuestionSecond)}</Text>
+                <Text size="sm">
+                    {i18next.t(
+                        ($) => $.channelDeleteQuestionSecond
+                    )}
+                </Text>
+
                 <Flex justify="flex-end" gap="sm" mt="md">
                     <Button
                         variant="default"
@@ -516,7 +447,11 @@ filter.add(filter.getDictionary("ru"));
                     >
                         {i18next.t(($) => $.cancel)}
                     </Button>
-                    <Button color="red" onClick={deleteChannel}>
+
+                    <Button
+                        color="red"
+                        onClick={deleteChannel}
+                    >
                         {i18next.t(($) => $.delete)}
                     </Button>
                 </Flex>
@@ -532,14 +467,20 @@ filter.add(filter.getDictionary("ru"));
                 title={i18next.t(($) => $.renameChannelTitle)}
                 centered
             >
-                <form onSubmit={renameForm.onSubmit(renameChannel)}>
+                <form
+                    onSubmit={renameForm.onSubmit(renameChannel)}
+                >
                     <TextInput
                         label={i18next.t(($) => $.channelName)}
-                        placeholder={i18next.t(($) => $.namePlaceholder)}
+                        placeholder={i18next.t(
+                            ($) => $.namePlaceholder
+                        )}
                         withAsterisk
                         autoFocus
                         key={renameForm.key("channelName")}
-                        {...renameForm.getInputProps("channelName")}
+                        {...renameForm.getInputProps(
+                            "channelName"
+                        )}
                     />
 
                     <Flex justify="flex-end" gap="sm" mt="md">
@@ -553,7 +494,10 @@ filter.add(filter.getDictionary("ru"));
                         >
                             {i18next.t(($) => $.cancel)}
                         </Button>
-                        <Button type="submit">{i18next.t(($) => $.rename)}</Button>
+
+                        <Button type="submit">
+                            {i18next.t(($) => $.rename)}
+                        </Button>
                     </Flex>
                 </form>
             </Modal>

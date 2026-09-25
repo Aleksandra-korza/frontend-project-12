@@ -2,6 +2,8 @@ import { TextInput, PasswordInput, Button, Container, Card, Title, Text, Flex, B
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useForm } from "@mantine/form";
+import { yupResolver } from "mantine-form-yup-resolver";
+import * as yup from "yup";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login } from "../slices/authSlice";
@@ -13,6 +15,27 @@ function Signup() {
 
     const [serverError, setServerError] = useState("");
 
+    const schema = yup.object().shape({
+        name: yup
+            .string()
+            .required(i18next.t(($) => $.required))
+            .min(3, i18next.t(($) => $.usernameRange))
+            .max(20, i18next.t(($) => $.usernameRange)),
+
+        password: yup
+            .string()
+            .required(i18next.t(($) => $.required))
+            .min(6, i18next.t(($) => $.passwordMin)),
+
+        confirmPassword: yup
+            .string()
+            .required(i18next.t(($) => $.required))
+            .oneOf(
+                [yup.ref("password")],
+                i18next.t(($) => $.mustMatch)
+            ),
+    });
+
     const form = useForm({
         initialValues: {
             name: "",
@@ -20,43 +43,7 @@ function Signup() {
             confirmPassword: "",
         },
 
-        validate: {
-            name: (value) => {
-                if (!value) {
-                    return i18next.t(($) => $.required);
-                }
-
-                if (value.length < 3 || value.length > 20) {
-                    return i18next.t(($) => $.usernameRange);
-                }
-
-                return null;
-            },
-
-            password: (value) => {
-                if (!value) {
-                    return i18next.t(($) => $.required);
-                }
-
-                if (value.length < 6) {
-                    return i18next.t(($) => $.passwordMin);
-                }
-
-                return null;
-            },
-
-            confirmPassword: (value, values) => {
-                if (!value) {
-                    return i18next.t(($) => $.required);
-                }
-
-                if (value !== values.password) {
-                    return i18next.t(($) => $.mustMatch);
-                }
-
-                return null;
-            },
-        },
+        validate: yupResolver(schema),
     });
 
     const handleSubmit = async (values) => {
@@ -86,10 +73,10 @@ function Signup() {
     return (
         <Flex direction="column" minH="100vh" bg="gray.0">
             {/* Шапка */}
-            <Box 
-                px="xl" 
-                py="sm" 
-                bg="white" 
+            <Box
+                px="xl"
+                py="sm"
+                bg="white"
                 style={{ borderBottom: "1px solid #dee2e6" }}
             >
                 <Anchor component={Link} to="/" fw={700} fz="md" c="dark" underline="never">
@@ -143,22 +130,6 @@ function Signup() {
 }
 
 export default Signup;
-
-//    <TextInput
-  //  label="Имя пользователя"
-  //  />  --- это поле ввода с подписанным названием - тьак мы пишем все поля для ввода - специальный инпут с названием label="""
-
-
-/*
-<div>                 ← вся страница
-│
-├── <header>          ← шапка
-│     └── 
-│
-└── <main>            ← основное содержимое
-      ├── Регистрация
-      └── форма
-*/
 
 
 
