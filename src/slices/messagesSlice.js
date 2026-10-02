@@ -43,7 +43,13 @@ const messagesSlice = createSlice({
         },
 
         addMessages: (state, action) => {
-            state.messages.push(action.payload);
+            const isExist = state.messages.some(
+                (message) => message.id === action.payload.id
+            );
+            
+            if (!isExist) {
+                state.messages.push(action.payload);
+            }
         },
     },
 

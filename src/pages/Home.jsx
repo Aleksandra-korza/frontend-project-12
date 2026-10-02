@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -45,25 +45,26 @@ function Home({ socket }) {
     const [isRenameChannelOpen, setIsRenameChannelOpen] = useState(false);
     const [channelToRename, setChannelToRename] = useState(null);
 
-    const channelSchema = yup.object().shape({
+    const channelSchema = useMemo(() => yup.object().shape({
         channelName: yup
-          .string()
-          .required(i18next.t(($) => $.required))
-          .min(3, i18next.t(($) => $.channelNameRange))
-          .max(20, i18next.t(($) => $.channelNameRange))
-          .test(
-            "unique-channel",
-            i18next.t(($) => $.channelAlreadyExists),
-            (value) =>
-              !channels.some(
-                (channel) =>
-                  channel.name.trim().toLowerCase() ===
-                  value.trim().toLowerCase()
-              )
-          ),
-      });
+            .string()
+            .required(i18next.t(($) => $.required))
+            .min(3, i18next.t(($) => $.channelNameRange))
+            .max(20, i18next.t(($) => $.channelNameRange))
+            .test(
+                "unique-channel",
+                i18next.t(($) => $.channelAlreadyExists),
+                (value) =>
+                    !channels.some(
+                        (channel) =>
+                            channel.id !== channelToRename &&
+                            channel.name.trim().toLowerCase() ===
+                            (value || "").trim().toLowerCase()
+    )
+            ),
+    }), [channels]);
 
-    useEffect(() => {
+      useEffect(() => {
         filter.clearList();
         filter.add(filter.getDictionary("en"));
         filter.add(filter.getDictionary("ru"));
@@ -73,26 +74,26 @@ function Home({ socket }) {
         const handleNewMessage = (message) => {
             dispatch(addMessages(message));
         };
+        const handleNewChannel = (channel) => {
+            dispatch(addChannelToStore(channel));
+        };
+        const handleRenameChannel = (channel) => {
+            dispatch(renameChannelInStore(channel));
+        };
+        const handleRemoveChannel = (channel) => {
+            dispatch(removeChannelFromStore(channel));
+        };
 
         socket.on("newMessage", handleNewMessage);
-
-        socket?.on("newChannel", (channel) => {
-            dispatch(addChannelToStore(channel));
-        });
-
-        socket?.on("renameChannel", (channel) => {
-            dispatch(renameChannelInStore(channel));
-        });
-
-        socket?.on("removeChannel", (channel) => {
-            dispatch(removeChannelFromStore(channel));
-        });
+        socket.on("newChannel", handleNewChannel);
+        socket.on("renameChannel", handleRenameChannel);
+        socket.on("removeChannel", handleRemoveChannel);
 
         return () => {
             socket.off("newMessage", handleNewMessage);
-            socket?.off("newChannel");
-            socket?.off("renameChannel");
-            socket?.off("removeChannel");
+            socket.off("newChannel", handleNewChannel);
+            socket.off("renameChannel", handleRenameChannel);
+            socket.off("removeChannel", handleRemoveChannel);
         };
     }, [dispatch, socket]);
 
@@ -121,11 +122,6 @@ function Home({ socket }) {
                     },
                 }
             );
-
-            // Если сокет не успел прислать событие, добавляем ответ сразу в Redux
-            if (response.data) {
-                dispatch(addMessages(response.data));
-            }
 
             setMessageText("");
         } catch (error) {
@@ -191,17 +187,13 @@ function Home({ socket }) {
                 }
             );
 
-            dispatch(fetchChannels());
-            dispatch(fetchMessages());
-
-            const generalChannel = channels.find(
-                (channel) => channel.name === "general"
-            );
-
-            if (generalChannel) {
-                setCurrentChannelId(generalChannel.id);
-            } else {
-                setCurrentChannelId(1);
+            // Если удалили именно тот канал, в котором сейчас находились:
+            if (channelToDelete === currentChannelId) {
+                const generalChannel = channels.find(
+                    (channel) => channel.name === "general"
+                );
+                const defaultChannel = generalChannel || channels.find((c) => c.id !== channelToDelete);
+                setCurrentChannelId(defaultChannel ? defaultChannel.id : null);
             }
 
             setIsDeleteChannelOpen(false);
