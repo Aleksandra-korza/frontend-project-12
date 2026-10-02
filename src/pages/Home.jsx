@@ -68,9 +68,13 @@ function Home({ socket }) {
         filter.add(filter.getDictionary("en"));
         filter.add(filter.getDictionary("ru"));
 
-        socket?.on("newMessage", (message) => {
+        if (!socket) return;
+
+        const handleNewMessage = (message) => {
             dispatch(addMessages(message));
-        });
+        };
+
+        socket.on("newMessage", handleNewMessage);
 
         socket?.on("newChannel", (channel) => {
             dispatch(addChannelToStore(channel));
@@ -85,7 +89,7 @@ function Home({ socket }) {
         });
 
         return () => {
-            socket?.off("newMessage");
+            socket.off("newMessage", handleNewMessage);
             socket?.off("newChannel");
             socket?.off("renameChannel");
             socket?.off("removeChannel");
@@ -102,11 +106,14 @@ function Home({ socket }) {
         }
 
         try {
-            await axios.post(
+            const username = localStorage.getItem("username") || "guest";
+
+            const response = await axios.post(
                 "/api/v1/messages",
                 {
                     body: filter.clean(messageText),
                     channelId: currentChannelId,
+                    username,
                 },
                 {
                     headers: {
@@ -114,6 +121,11 @@ function Home({ socket }) {
                     },
                 }
             );
+
+            // Если сокет не успел прислать событие, добавляем ответ сразу в Redux
+            if (response.data) {
+                dispatch(addMessages(response.data));
+            }
 
             setMessageText("");
         } catch (error) {

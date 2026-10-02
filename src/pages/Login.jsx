@@ -16,17 +16,25 @@ import {
   Anchor,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { yupResolver } from 'mantine-form-yup-resolver';
+import * as yup from 'yup';
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [authErr, setAuthError] = useState('');
 
+  const loginSchema = yup.object().shape({
+    username: yup.string().trim().required(i18next.t(($) => $.required)),
+    password: yup.string().trim().required(i18next.t(($) => $.required)),
+  });
+
   const form = useForm({
     initialValues: {
       username: '',
       password: '',
     },
+    validate: yupResolver(loginSchema),
   });
 
   const handleSubmit = async (values) => {
@@ -42,6 +50,7 @@ function Login() {
       }
 
       localStorage.setItem('token', token);
+      localStorage.setItem('username', response.data.username || values.username);
       dispatch(login(token));
       navigate('/');
     } catch (error) {
